@@ -1,0 +1,84 @@
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/88/three.min.js"></script>
+  <script>
+    // ページの読み込みを待つ
+    window.addEventListener('load', init);
+
+    const FIELD_SIZE = 1000;
+    const CANVAS_WIDTH = 540;
+    const CANVAS_HEIGHT = 540;
+
+    function init() {
+
+      // レンダラーを作成
+      const renderer = new THREE.WebGLRenderer({
+        canvas: document.querySelector('#myCanvas'),
+        antialias: true
+      });
+      renderer.setSize(CANVAS_WIDTH, CANVAS_HEIGHT);
+      renderer.shadowMap.enabled = true;
+
+      // シーンを作成
+      const scene = new THREE.Scene();
+
+      // カメラを作成
+      const camera = new THREE.PerspectiveCamera(45, CANVAS_WIDTH / CANVAS_HEIGHT, 0.01, FIELD_SIZE);
+      camera.position.set(0, 100, 0);
+
+      // 平行光源を作成
+      const directionalLight = new THREE.DirectionalLight(0xFFFFFF);
+      directionalLight.position.set(200, 300, 200);
+      directionalLight.shadow.camera.near = 100;
+      directionalLight.shadow.camera.far = FIELD_SIZE;
+      directionalLight.shadow.camera.top = FIELD_SIZE;
+      directionalLight.shadow.camera.bottom = FIELD_SIZE * (-1);
+      directionalLight.shadow.camera.left = FIELD_SIZE;
+      directionalLight.shadow.camera.right = FIELD_SIZE * (-1);
+      directionalLight.castShadow = true;
+      scene.add(directionalLight);
+
+      // 2つの床面を作成
+      const planeGeometry = new THREE.PlaneGeometry( 199, 1200, 32 );
+      const planeColor = 0xCCCCCC;
+      const planeMaterials = [
+        new THREE.MeshBasicMaterial( {color: planeColor} ),
+        new THREE.MeshPhongMaterial( {color: planeColor} )
+      ];
+      const planePositions = [
+        {x:  -100, y: 0, z:  0},
+        {x:   100, y: 0, z:  0}
+      ];
+      for(let i=0; i < 2; i++){
+        const plane = new THREE.Mesh( planeGeometry, planeMaterials[i] );
+        plane.position.set(planePositions[i].x, planePositions[i].y, planePositions[i].z);
+        plane.rotation.x = Math.PI / 2 * (-1);
+        plane.receiveShadow = true;
+        scene.add( plane );
+      }
+
+      // ２つの球体を配置
+      const ballSize = 20;
+      const ballPositions = [
+        {x:  -100, y: ballSize, z:  -500},
+        {x:   100, y: ballSize, z:  -500}
+      ];
+      const ballGeometry = new THREE.SphereGeometry(ballSize, 100);
+
+      for (let j = 0; j < 2; j++) {
+        const ballMaterial = new THREE.MeshPhongMaterial( { color: 0x88ccff } );
+        const ball = new THREE.Mesh( ballGeometry, ballMaterial );
+        ball.position.set( ballPositions[j].x, ballPositions[j].y, ballPositions[j].z);
+        ball.castShadow = true;
+        scene.add(ball);
+      }
+      renderer.render(scene, camera);
+    }
+  </script>
+</head>
+<body>
+  <canvas id="myCanvas"></canvas>
+</body>
+</html>
